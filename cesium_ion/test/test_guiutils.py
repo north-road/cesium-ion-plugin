@@ -42,6 +42,7 @@ class GuiUtilsTest(unittest.TestCase):
                       GuiUtils.get_icon_svg('browser_root.svg'))
         self.assertFalse(GuiUtils.get_icon_svg('not_an_icon.svg'))
 
+    @unittest.skip('No ui files yet')
     def testGetUiFilePath(self):
         """
         Tests get_ui_file_path svg path
