@@ -76,15 +76,15 @@ class CesiumIonPlugin(QObject):
         Creates the Cesium ion oauth config, if it doesn't already exist
         """
         if not QgsApplication.authManager().masterPasswordHashInDatabase() or \
-            not QgsApplication.authManager().setMasterPassword(True):
-
+                not QgsApplication.authManager().setMasterPassword(True):
             def show_options(_):
                 self.iface.showOptionsDialog(
                     self.iface.mainWindow(), 'mOptionsPageAuth')
 
             message_widget = self.iface.messageBar().createMessage(
                 self.tr('Cesium ion'),
-                self.tr('QGIS authentication system not available -- please configure and retry')
+                self.tr(
+                    'QGIS authentication system not available -- please configure and retry')
             )
             details_button = QPushButton(self.tr("Configure"))
             details_button.clicked.connect(show_options)
