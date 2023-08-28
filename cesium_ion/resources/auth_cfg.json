@@ -1,0 +1,26 @@
+{
+    "accessMethod": 0,
+    "apiKey": "",
+    "clientId": "510",
+    "clientSecret": "",
+    "configType": 1,
+    "customHeader": "",
+    "description": "",
+    "grantFlow": 3,
+    "id": "cesiion",
+    "name": "Cesium ion",
+    "objectName": "",
+    "password": "",
+    "persistToken": false,
+    "queryPairs": {
+    },
+    "redirectPort": 7070,
+    "redirectUrl": "qgis/oauth2/callback",
+    "refreshTokenUrl": "",
+    "requestTimeout": 30,
+    "requestUrl": "https://ion.cesium.com/oauth",
+    "scope": "assets:read assets:list",
+    "tokenUrl": "https://api.cesium.com/oauth/token",
+    "username": "",
+    "version": 1
+}

@@ -9,7 +9,6 @@ from typing import (
     List
 )
 
-from qgis.PyQt import sip
 from qgis.PyQt.QtCore import (
     QUrl,
     QUrlQuery,
@@ -24,8 +23,8 @@ from qgis.core import (
     QgsBlockingNetworkRequest
 )
 
-from .meta import PLUGIN_METADATA_PARSER
 from .asset import Asset
+from .meta import PLUGIN_METADATA_PARSER
 
 
 class CesiumIonApiClient(QObject):
@@ -35,6 +34,7 @@ class CesiumIonApiClient(QObject):
 
     URL = 'https://api.cesium.com'
     LIST_ASSETS_ENDPOINT = '/v1/assets'
+    OAUTH_ID = 'cesiion'
 
     error_occurred = pyqtSignal(str)
 
@@ -119,7 +119,7 @@ class CesiumIonApiClient(QObject):
         """
         req = self.list_assets_request(page, filter_string)
         blocking_request = QgsBlockingNetworkRequest()
-        blocking_request.setAuthCfg('cesiion')
+        blocking_request.setAuthCfg(API_CLIENT.OAUTH_ID)
 
         res = blocking_request.get(req)
         if res != QgsBlockingNetworkRequest.NoError:
