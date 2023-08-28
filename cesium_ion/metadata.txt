@@ -9,7 +9,7 @@
 
 [general]
 name=Cesium ion
-qgisMinimumVersion=3.34
+qgisMinimumVersion=3.33
 description=Browse and add datasets from Cesium ion
 version=1.0.0
 author=North Road
