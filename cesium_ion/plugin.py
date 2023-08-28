@@ -102,7 +102,7 @@ class CesiumIonPlugin(QObject):
             'resources',
             'auth_cfg.json')
 
-        with open(config_json_path, 'rt') as config_json_file:
+        with open(config_json_path, 'rt', encoding='utf8') as config_json_file:
             config_json = config_json_file.read()
 
         config.setConfig('oauth2config', config_json)

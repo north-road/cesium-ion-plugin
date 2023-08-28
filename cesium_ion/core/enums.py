@@ -1,3 +1,7 @@
+"""
+Cesium ion plugin enums
+"""
+
 from enum import Enum, auto
 
 

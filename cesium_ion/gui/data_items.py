@@ -55,12 +55,16 @@ class IonRootItem(QgsDataCollectionItem):
 
         self.setIcon(GuiUtils.get_icon('browser_root.svg'))
 
+    # QgsDataCollectionItem interface
+
+    # pylint: disable=missing-function-docstring
     def createChildren(self):
         assets = API_CLIENT.list_assets_blocking()
         res = []
         for asset in assets:
             res.append(IonAssetItem(self, asset))
         return res
+    # pylint: enable=missing-function-docstring
 
 
 class CesiumIonDataItemProvider(QgsDataItemProvider):
@@ -68,9 +72,8 @@ class CesiumIonDataItemProvider(QgsDataItemProvider):
     Data item provider for Cesium ion items in the QGIS browser
     """
 
-    def __init__(self):
-        super().__init__()
-
+    # QgsDataItemProvider interface
+    # pylint: disable=missing-function-docstring,unused-argument
     def name(self):
         return 'cesium_ion'
 
@@ -85,3 +88,4 @@ class CesiumIonDataItemProvider(QgsDataItemProvider):
             return IonRootItem()
 
         return None
+    # pylint: enable=missing-function-docstring,unused-argument

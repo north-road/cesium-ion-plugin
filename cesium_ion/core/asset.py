@@ -1,3 +1,7 @@
+"""
+Cesium ion asset class
+"""
+
 from dataclasses import dataclass
 from typing import Optional, Dict
 
@@ -41,9 +45,9 @@ class Asset:
             attribution=json.get('attribution'),
             type=AssetType.from_string(json['type']),
             bytes=json.get('bytes'),
-            date_added=
-            QDateTime.fromString(json['dateAdded'], Qt.DateFormat.ISODate)
-            if 'dateAdded' in json else None,
+            date_added=QDateTime.fromString(
+                json['dateAdded'], Qt.DateFormat.ISODate
+            ) if 'dateAdded' in json else None,
             status=Status.from_string(json['status']),
             percent_complete=json.get('percentComplete'),
             archivable=json.get('archivable'),
@@ -55,7 +59,9 @@ class Asset:
         Returns a QGIS data source string representing a connection
         to the asset
         """
+        # pylint: disable=import-outside-toplevel
         from .api_client import CesiumIonApiClient
+        # pylint: enable=import-outside-toplevel
         return 'ion://?assetId={}&authcfg={}'.format(
             self.id, CesiumIonApiClient.OAUTH_ID
         )
