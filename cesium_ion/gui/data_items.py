@@ -11,26 +11,33 @@ from qgis.core import (
     QgsDataItem
 )
 
+from ..core import (
+    Asset,
+    API_CLIENT
+)
 from .gui_utils import GuiUtils
 
 
 class IonAssetItem(QgsLayerItem):
     """
-    Represents an individual asset on Cesium ion
+    Represents an individual asset.py on Cesium ion
     """
 
     def __init__(self,
                  parent: QgsDataItem,
-                 name: str,
-                 asset_id: str,
-                 uri: str):  # NOQA
+                 asset: Asset):  # NOQA
         super().__init__(
             parent,
-            name,
-            'ion{}'.format(asset_id),
-            uri,
-            Qgis.BrowserLayerTypes.TiledScene,
+            asset.name,
+            'ion{}'.format(asset.id),
+            'xxxxxxxxxxxx',
+            Qgis.BrowserLayerType.TiledScene,
             'cesiumtiles')
+        self.asset = asset
+        self.setState(
+            Qgis.BrowserItemState.Populated
+        )
+        self.setIcon(GuiUtils.get_icon('cesium_3d_tile.svg'))
 
 
 class IonRootItem(QgsDataCollectionItem):
@@ -47,10 +54,12 @@ class IonRootItem(QgsDataCollectionItem):
         )
 
         self.setIcon(GuiUtils.get_icon('browser_root.svg'))
-        self.populate()
 
     def createChildren(self):
+        assets = API_CLIENT.list_assets_blocking()
         res = []
+        for asset in assets:
+            res.append(IonAssetItem(self, asset))
         return res
 
 
