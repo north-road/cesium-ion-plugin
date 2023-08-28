@@ -84,7 +84,8 @@ class CesiumIonPlugin(QObject):
             message_widget = self.iface.messageBar().createMessage(
                 self.tr('Cesium ion'),
                 self.tr(
-                    'QGIS authentication system not available -- please configure and retry')
+                    'QGIS authentication system not available -- '
+                    'please configure and retry')
             )
             details_button = QPushButton(self.tr("Configure"))
             details_button.clicked.connect(show_options)
