@@ -1,0 +1,49 @@
+name: Test plugin
+
+on:
+  push:
+    paths:
+    - "cesium_ion/**"
+    - ".github/workflows/test_plugin.yaml"
+  pull_request:
+    types: [opened, synchronize, edited]
+
+env:
+  # plugin name/directory where the code for the plugin is stored
+  PLUGIN_NAME: cesium_ion
+  # python notation to test running inside plugin
+  TESTS_RUN_FUNCTION: cesium_ion.test_suite.test_package
+  # Docker settings
+  DOCKER_IMAGE: qgis/qgis
+
+
+jobs:
+
+  Test-plugin-cesium_ion:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        docker_tags: [release-3_22, release-3_28, release-3_32, latest]
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Docker pull and create qgis-testing-environment
+        run: |
+          docker pull "$DOCKER_IMAGE":${{ matrix.docker_tags }}
+          docker run -d --name qgis-testing-environment -v "$GITHUB_WORKSPACE":/tests_directory -e DISPLAY=:99 "$DOCKER_IMAGE":${{ matrix.docker_tags }}
+
+      - name: Docker set up QGIS
+        run: |
+          docker exec qgis-testing-environment sh -c "qgis_setup.sh $PLUGIN_NAME"
+          docker exec qgis-testing-environment sh -c "rm -f /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/$PLUGIN_NAME"
+          docker exec qgis-testing-environment sh -c "ln -s /tests_directory/$PLUGIN_NAME /root/.local/share/QGIS/QGIS3/profiles/default/python/plugins/$PLUGIN_NAME"
+          docker exec qgis-testing-environment sh -c "pip3 install -r /tests_directory/requirements/testing.txt"
+
+      - name: Docker run plugin tests
+        run: |
+          docker exec qgis-testing-environment sh -c "qgis_testrunner.sh $TESTS_RUN_FUNCTION"
