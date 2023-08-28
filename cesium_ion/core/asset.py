@@ -49,3 +49,13 @@ class Asset:
             archivable=json.get('archivable'),
             exportable=json.get('exportable')
         )
+
+    def as_qgis_data_source(self) -> str:
+        """
+        Returns a QGIS data source string representing a connection
+        to the asset
+        """
+        from .api_client import CesiumIonApiClient
+        return 'ion://?assetId={}&authcfg={}'.format(
+            self.id, CesiumIonApiClient.OAUTH_ID
+        )

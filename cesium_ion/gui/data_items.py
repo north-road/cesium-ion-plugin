@@ -30,7 +30,7 @@ class IonAssetItem(QgsLayerItem):
             parent,
             asset.name,
             'ion{}'.format(asset.id),
-            'xxxxxxxxxxxx',
+            asset.as_qgis_data_source(),
             Qgis.BrowserLayerType.TiledScene,
             'cesiumtiles')
         self.asset = asset
