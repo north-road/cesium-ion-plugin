@@ -16,12 +16,14 @@ from qgis.core import (
     QgsAuthMethodConfig
 )
 from qgis.gui import (
+    QgsGui,
     QgisInterface
 )
 
 from .core import API_CLIENT
 from .gui import (
-    CesiumIonDataItemProvider
+    CesiumIonDataItemProvider,
+    CesiumIonDataItemGuiProvider
 )
 
 
@@ -35,6 +37,8 @@ class CesiumIonPlugin(QObject):
         self.iface: QgisInterface = iface
 
         self.data_item_provider: Optional[CesiumIonDataItemProvider] = None
+        self.data_item_gui_provider: Optional[CesiumIonDataItemGuiProvider] = \
+            None
 
     # qgis plugin interface
     # pylint: disable=missing-function-docstring
@@ -44,9 +48,22 @@ class CesiumIonPlugin(QObject):
         QgsApplication.dataItemProviderRegistry().addProvider(
             self.data_item_provider
         )
+
+        self.data_item_gui_provider = CesiumIonDataItemGuiProvider()
+        QgsGui.dataItemGuiProviderRegistry().addProvider(
+            self.data_item_gui_provider
+        )
+
         self._create_oauth_config()
 
     def unload(self):
+        if self.data_item_gui_provider and \
+                not sip.isdeleted(self.data_item_gui_provider):
+            QgsGui.dataItemGuiProviderRegistry().removeProvider(
+                self.data_item_gui_provider
+            )
+        self.data_item_gui_provider = None
+
         if self.data_item_provider and \
                 not sip.isdeleted(self.data_item_provider):
             QgsApplication.dataItemProviderRegistry().removeProvider(

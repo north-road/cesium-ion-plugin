@@ -7,9 +7,12 @@ from qgis.core import (
     QgsDataProvider,
     QgsDataItemProvider,
     QgsDataCollectionItem,
-    QgsLayerItem,
     QgsDataItem
 )
+from qgis.gui import (
+    QgsDataItemGuiProvider
+)
+from qgis.utils import iface
 
 from ..core import (
     Asset,
@@ -18,7 +21,7 @@ from ..core import (
 from .gui_utils import GuiUtils
 
 
-class IonAssetItem(QgsLayerItem):
+class IonAssetItem(QgsDataItem):
     """
     Represents an individual asset.py on Cesium ion
     """
@@ -27,17 +30,19 @@ class IonAssetItem(QgsLayerItem):
                  parent: QgsDataItem,
                  asset: Asset):  # NOQA
         super().__init__(
+            Qgis.BrowserItemType.Custom,
             parent,
             asset.name,
             'ion{}'.format(asset.id),
-            asset.as_qgis_data_source(),
-            Qgis.BrowserLayerType.TiledScene,
-            'cesiumtiles')
+            'cesiumion')
         self.asset = asset
         self.setState(
             Qgis.BrowserItemState.Populated
         )
         self.setIcon(GuiUtils.get_icon('cesium_3d_tile.svg'))
+
+    def hasDragEnabled(self):
+        return True
 
 
 class IonRootItem(QgsDataCollectionItem):
@@ -89,3 +94,27 @@ class CesiumIonDataItemProvider(QgsDataItemProvider):
 
         return None
     # pylint: enable=missing-function-docstring,unused-argument
+
+
+class CesiumIonDataItemGuiProvider(QgsDataItemGuiProvider):
+    """
+    Data item GUI provider for Cesium ion items
+    """
+
+    def name(self):
+        return 'cesium_ion'
+
+    def handleDoubleClick(self, item, context):
+        if not isinstance(item, IonAssetItem):
+            return False
+
+        from .add_asset_dialog import AddAssetDialog
+        dialog = AddAssetDialog()
+        if dialog.exec_():
+            if dialog.existing_token():
+                ds = item.asset.as_qgis_data_source(dialog.existing_token())
+                iface.addTiledSceneLayer(
+                    ds, item.asset.name, 'cesiumtiles'
+                )
+
+        return True

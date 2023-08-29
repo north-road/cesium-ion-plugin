@@ -54,11 +54,16 @@ class Asset:
             exportable=json.get('exportable')
         )
 
-    def as_qgis_data_source(self) -> str:
+    def as_qgis_data_source(self, access_token: Optional[str]=None) -> str:
         """
         Returns a QGIS data source string representing a connection
         to the asset
         """
+        if access_token:
+            return 'ion://?assetId={}&accessToken={}'.format(
+                self.id, access_token
+            )
+
         # pylint: disable=import-outside-toplevel
         from .api_client import CesiumIonApiClient
         # pylint: enable=import-outside-toplevel
