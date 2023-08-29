@@ -20,11 +20,13 @@ from qgis.PyQt.QtNetwork import (
     QNetworkReply
 )
 from qgis.core import (
+    QgsApplication,
     QgsBlockingNetworkRequest
 )
 
 from .asset import Asset
 from .meta import PLUGIN_METADATA_PARSER
+from .token import Token
 
 
 class CesiumIonApiClient(QObject):
@@ -34,6 +36,7 @@ class CesiumIonApiClient(QObject):
 
     URL = 'https://api.cesium.com'
     LIST_ASSETS_ENDPOINT = '/v1/assets'
+    LIST_TOKENS_ENDPOINT = '/v2/tokens'
     OAUTH_ID = 'cesiion'
 
     error_occurred = pyqtSignal(str)
@@ -136,6 +139,45 @@ class CesiumIonApiClient(QObject):
 
         assets_json = json.loads(reply.content().data().decode())['items']
         return [Asset.from_json(asset) for asset in assets_json]
+
+    def list_tokens_request(self,
+                            page: Optional[int] = None,
+                            filter_string: Optional[str] = None) \
+            -> QNetworkRequest:
+        """
+        Creates a list tokens request
+        """
+        params = {}
+        if page is not None:
+            params['page'] = page
+        if filter_string:
+            params['search'] = filter_string
+
+        request = self._build_request(
+            self.LIST_TOKENS_ENDPOINT,
+            params=params
+        )
+        QgsApplication.authManager().updateNetworkRequest(
+            request, API_CLIENT.OAUTH_ID
+        )
+        return request
+
+    def parse_list_tokens_reply(self,
+                                reply: QNetworkReply
+                                ) -> List[Token]:
+        """
+        Parses a list tokens reply and returns a list of tokens
+        """
+        if reply.error() != QNetworkReply.NoError:
+            self.error_occurred.emit(reply.errorString())
+            return []
+
+        if reply.error() == QNetworkReply.OperationCanceledError:
+            return []
+
+        reply_data = reply.readAll()
+        tokens_json = json.loads(reply_data.data().decode())['items']
+        return [Token.from_json(token) for token in tokens_json]
 
 
 API_CLIENT = CesiumIonApiClient()

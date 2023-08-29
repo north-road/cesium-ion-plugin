@@ -19,7 +19,7 @@
     "refreshTokenUrl": "",
     "requestTimeout": 30,
     "requestUrl": "https://ion.cesium.com/oauth",
-    "scope": "assets:read assets:list",
+    "scope": "assets:read assets:list tokens:write tokens:read",
     "tokenUrl": "https://api.cesium.com/oauth/token",
     "username": "",
     "version": 1
