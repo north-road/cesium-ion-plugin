@@ -37,6 +37,7 @@ class CesiumIonApiClient(QObject):
     URL = 'https://api.cesium.com'
     LIST_ASSETS_ENDPOINT = '/v1/assets'
     LIST_TOKENS_ENDPOINT = '/v2/tokens'
+    CREATE_TOKEN_ENDPOINT = '/v2/tokens'
     OAUTH_ID = 'cesiion'
 
     error_occurred = pyqtSignal(str)
@@ -178,6 +179,41 @@ class CesiumIonApiClient(QObject):
         reply_data = reply.readAll()
         tokens_json = json.loads(reply_data.data().decode())['items']
         return [Token.from_json(token) for token in tokens_json]
+
+    def create_token(self, token_name: str,
+                     scopes: List[str],
+                     asset_ids: Optional[List[int]] = None) -> Optional[Token]:
+        """
+        Creates a new token
+        """
+        params = {'name': token_name,
+                  'scopes': scopes}
+        if asset_ids:
+            params['assetIds'] = asset_ids
+
+        request = self._build_request(
+            self.CREATE_TOKEN_ENDPOINT,
+            {'Content-Type': 'application/json'}
+        )
+
+        blocking_request = QgsBlockingNetworkRequest()
+        blocking_request.setAuthCfg(API_CLIENT.OAUTH_ID)
+
+        res = blocking_request.post(request, json.dumps(params).encode())
+        if res != QgsBlockingNetworkRequest.NoError:
+            self.error_occurred.emit(blocking_request.errorMessage())
+            return None
+
+        reply = blocking_request.reply()
+        if reply.error() == QNetworkReply.OperationCanceledError:
+            return None
+
+        if reply.error() != QNetworkReply.NoError:
+            self.error_occurred.emit(reply.errorString())
+            return None
+
+        token_json = json.loads(reply.content().data().decode())
+        return Token.from_json(token_json)
 
 
 API_CLIENT = CesiumIonApiClient()

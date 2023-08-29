@@ -112,9 +112,28 @@ class CesiumIonDataItemGuiProvider(QgsDataItemGuiProvider):
         dialog = AddAssetDialog()
         if dialog.exec_():
             if dialog.existing_token():
-                ds = item.asset.as_qgis_data_source(dialog.existing_token())
-                iface.addTiledSceneLayer(
-                    ds, item.asset.name, 'cesiumtiles'
+                self._add_asset_with_token(
+                    item.asset, dialog.existing_token()
                 )
+            else:
+                new_token = API_CLIENT.create_token(
+                    dialog.new_token_name(),
+                    scopes=['assets:list' ,'assets:read'],
+                    asset_ids=[item.asset.id]
+                )
+                if new_token:
+                    self._add_asset_with_token(
+                        item.asset, new_token.token
+                    )
 
         return True
+
+
+    def _add_asset_with_token(self, asset: Asset, token: str):
+        """
+        Adds an asset with the specified token
+        """
+        ds = asset.as_qgis_data_source(token)
+        iface.addTiledSceneLayer(
+            ds, asset.name, 'cesiumtiles'
+        )
