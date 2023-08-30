@@ -9,7 +9,6 @@ from qgis.PyQt.QtCore import (
 from qgis.PyQt.QtWidgets import (
     QAction
 )
-
 from qgis.core import (
     Qgis,
     QgsDataProvider,
@@ -24,13 +23,13 @@ from qgis.gui import (
 )
 from qgis.utils import iface
 
+from .gui_utils import GuiUtils
 from ..core import (
     Asset,
     AssetType,
     Status,
     API_CLIENT
 )
-from .gui_utils import GuiUtils
 
 
 class IonAssetItem(QgsDataItem):
@@ -158,6 +157,29 @@ class CesiumIonLayerUtils:
                 )
 
     @staticmethod
+    def add_asset_by_id_interactive():
+        """
+        Interactively allows users to add an asset by ID to a project
+        """
+        # pylint: disable=import-outside-toplevel
+        from .add_asset_dialog import AddAssetByIdDialog
+        # pylint: enable=import-outside-toplevel
+
+        dialog = AddAssetByIdDialog()
+        if not dialog.exec_():
+            return
+
+        asset = Asset(
+            id=dialog.asset_id(),
+            name='Unknown',
+            type=AssetType.Tiles3D,
+            status=Status.Complete
+        )
+        CesiumIonLayerUtils.add_asset_with_token(
+            asset, dialog.token()
+        )
+
+    @staticmethod
     def add_asset_with_token(asset: Asset, token: str):
         """
         Adds an asset with the specified token
@@ -192,13 +214,17 @@ class CesiumIonDataItemGuiProvider(QgsDataItemGuiProvider):
         return QCoreApplication.translate(context, string)
 
     def populateContextMenu(self, item, menu, selectedItems, context):
-        if not isinstance(item, IonAssetItem):
-            return
-
-        add_to_project_action = QAction(self.tr('Add Asset to Project'),
-                                        menu)
-        add_to_project_action.triggered.connect(partial(self._add_asset, item.asset))
-        menu.addAction(add_to_project_action)
+        if isinstance(item, IonAssetItem):
+            add_to_project_action = QAction(self.tr('Add Asset to Project…'),
+                                            menu)
+            add_to_project_action.triggered.connect(
+                partial(self._add_asset, item.asset))
+            menu.addAction(add_to_project_action)
+        elif isinstance(item, IonRootItem):
+            add_by_id_action = QAction(self.tr('Add Asset by ID…'),
+                                       menu)
+            add_by_id_action.triggered.connect(self._add_asset_by_id)
+            menu.addAction(add_by_id_action)
 
     # pylint: enable=missing-docstring,unused-argument
 
@@ -207,6 +233,12 @@ class CesiumIonDataItemGuiProvider(QgsDataItemGuiProvider):
         Adds an asset to the project
         """
         CesiumIonLayerUtils.add_asset_interactive(asset)
+
+    def _add_asset_by_id(self):
+        """
+        Interactively adds an asset by ID
+        """
+        CesiumIonLayerUtils.add_asset_by_id_interactive()
 
 
 class CesiumIonDropHandler(QgsCustomDropHandler):
