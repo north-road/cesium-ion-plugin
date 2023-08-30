@@ -7,15 +7,19 @@ from qgis.core import (
     QgsDataProvider,
     QgsDataItemProvider,
     QgsDataCollectionItem,
-    QgsDataItem
+    QgsDataItem,
+    QgsMimeDataUtils
 )
 from qgis.gui import (
-    QgsDataItemGuiProvider
+    QgsDataItemGuiProvider,
+    QgsCustomDropHandler
 )
 from qgis.utils import iface
 
 from ..core import (
     Asset,
+    AssetType,
+    Status,
     API_CLIENT
 )
 from .gui_utils import GuiUtils
@@ -34,15 +38,31 @@ class IonAssetItem(QgsDataItem):
             parent,
             asset.name,
             'ion{}'.format(asset.id),
-            'cesiumion')
+            'cesium_ion')
         self.asset = asset
         self.setState(
             Qgis.BrowserItemState.Populated
         )
         self.setIcon(GuiUtils.get_icon('cesium_3d_tile.svg'))
 
+    # QgsDataItem interface:
+
+    # pylint: disable=missing-docstring
     def hasDragEnabled(self):
         return True
+
+    def mimeUri(self):
+        u = QgsMimeDataUtils.Uri()
+        u.layerType = "custom"
+        u.providerKey = "cesium_ion"
+        u.name = self.asset.name
+        u.uri = str(self.asset.id)
+        return u
+
+    def mimeUris(self):  # pylint: disable=missing-docstring
+        return [self.mimeUri()]
+
+    # pylint: enable=missing-docstring
 
 
 class IonRootItem(QgsDataCollectionItem):
@@ -96,6 +116,44 @@ class CesiumIonDataItemProvider(QgsDataItemProvider):
     # pylint: enable=missing-function-docstring,unused-argument
 
 
+class CesiumIonLayerUtils:
+    """
+    Utilities for working with cesium ion QGIS map layers
+    """
+
+    @staticmethod
+    def add_asset_interactive(asset: Asset):
+        from .add_asset_dialog import AddAssetDialog
+        dialog = AddAssetDialog()
+        if not dialog.exec_():
+            return
+
+        if dialog.existing_token():
+            CesiumIonLayerUtils.add_asset_with_token(
+                asset, dialog.existing_token()
+            )
+        else:
+            new_token = API_CLIENT.create_token(
+                dialog.new_token_name(),
+                scopes=['assets:list', 'assets:read'],
+                asset_ids=[int(asset.id)]
+            )
+            if new_token:
+                CesiumIonLayerUtils.add_asset_with_token(
+                    asset, new_token.token
+                )
+
+    @staticmethod
+    def add_asset_with_token(asset: Asset, token: str):
+        """
+        Adds an asset with the specified token
+        """
+        ds = asset.as_qgis_data_source(token)
+        iface.addTiledSceneLayer(
+            ds, asset.name, 'cesiumtiles'
+        )
+
+
 class CesiumIonDataItemGuiProvider(QgsDataItemGuiProvider):
     """
     Data item GUI provider for Cesium ion items
@@ -108,32 +166,32 @@ class CesiumIonDataItemGuiProvider(QgsDataItemGuiProvider):
         if not isinstance(item, IonAssetItem):
             return False
 
-        from .add_asset_dialog import AddAssetDialog
-        dialog = AddAssetDialog()
-        if dialog.exec_():
-            if dialog.existing_token():
-                self._add_asset_with_token(
-                    item.asset, dialog.existing_token()
-                )
-            else:
-                new_token = API_CLIENT.create_token(
-                    dialog.new_token_name(),
-                    scopes=['assets:list' ,'assets:read'],
-                    asset_ids=[item.asset.id]
-                )
-                if new_token:
-                    self._add_asset_with_token(
-                        item.asset, new_token.token
-                    )
-
+        CesiumIonLayerUtils.add_asset_interactive(item.asset)
         return True
 
 
-    def _add_asset_with_token(self, asset: Asset, token: str):
-        """
-        Adds an asset with the specified token
-        """
-        ds = asset.as_qgis_data_source(token)
-        iface.addTiledSceneLayer(
-            ds, asset.name, 'cesiumtiles'
+class CesiumIonDropHandler(QgsCustomDropHandler):
+    """
+    Custom drop handler for Cesium ion assets
+    """
+
+    # QgsCustomDropHandler interface:
+
+    # pylint: disable=missing-docstring
+    def customUriProviderKey(self):
+        return 'cesium_ion'
+
+    def customUriProviderKey(self):
+        return 'cesium_ion'
+
+    def handleCustomUriDrop(self, uri):
+        asset = Asset(
+            id=uri.uri,
+            name=uri.name,
+            type=AssetType.Tiles3D,
+            status=Status.Complete
         )
+
+        CesiumIonLayerUtils.add_asset_interactive(asset)
+
+    # pylint: enable=missing-docstring

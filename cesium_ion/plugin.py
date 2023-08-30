@@ -23,7 +23,8 @@ from qgis.gui import (
 from .core import API_CLIENT
 from .gui import (
     CesiumIonDataItemProvider,
-    CesiumIonDataItemGuiProvider
+    CesiumIonDataItemGuiProvider,
+    CesiumIonDropHandler
 )
 
 
@@ -39,6 +40,7 @@ class CesiumIonPlugin(QObject):
         self.data_item_provider: Optional[CesiumIonDataItemProvider] = None
         self.data_item_gui_provider: Optional[CesiumIonDataItemGuiProvider] = \
             None
+        self.drop_handler: Optional[CesiumIonDropHandler] = None
 
     # qgis plugin interface
     # pylint: disable=missing-function-docstring
@@ -53,6 +55,9 @@ class CesiumIonPlugin(QObject):
         QgsGui.dataItemGuiProviderRegistry().addProvider(
             self.data_item_gui_provider
         )
+
+        self.drop_handler = CesiumIonDropHandler()
+        self.iface.registerCustomDropHandler(self.drop_handler)
 
         self._create_oauth_config()
 
@@ -70,6 +75,9 @@ class CesiumIonPlugin(QObject):
                 self.data_item_provider
             )
         self.data_item_provider = None
+
+        self.iface.unregisterCustomDropHandler(self.drop_handler)
+        self.drop_handler = None
 
     # pylint: enable=missing-function-docstring
 
