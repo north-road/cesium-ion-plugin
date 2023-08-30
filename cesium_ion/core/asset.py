@@ -54,7 +54,7 @@ class Asset:
             exportable=json.get('exportable')
         )
 
-    def as_qgis_data_source(self, access_token: Optional[str]=None) -> str:
+    def as_qgis_data_source(self, access_token: Optional[str] = None) -> str:
         """
         Returns a QGIS data source string representing a connection
         to the asset

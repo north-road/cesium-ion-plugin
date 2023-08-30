@@ -123,7 +123,13 @@ class CesiumIonLayerUtils:
 
     @staticmethod
     def add_asset_interactive(asset: Asset):
+        """
+        Interactively allows users to add an asset to a project
+        """
+        # pylint: disable=import-outside-toplevel
         from .add_asset_dialog import AddAssetDialog
+        # pylint: enable=import-outside-toplevel
+
         dialog = AddAssetDialog()
         if not dialog.exec_():
             return
@@ -159,6 +165,9 @@ class CesiumIonDataItemGuiProvider(QgsDataItemGuiProvider):
     Data item GUI provider for Cesium ion items
     """
 
+    # QgsDataItemGuiProvider interface:
+
+    # pylint: disable=missing-docstring,unused-argument
     def name(self):
         return 'cesium_ion'
 
@@ -169,6 +178,8 @@ class CesiumIonDataItemGuiProvider(QgsDataItemGuiProvider):
         CesiumIonLayerUtils.add_asset_interactive(item.asset)
         return True
 
+    # pylint: enable=missing-docstring,unused-argument
+
 
 class CesiumIonDropHandler(QgsCustomDropHandler):
     """
@@ -178,9 +189,6 @@ class CesiumIonDropHandler(QgsCustomDropHandler):
     # QgsCustomDropHandler interface:
 
     # pylint: disable=missing-docstring
-    def customUriProviderKey(self):
-        return 'cesium_ion'
-
     def customUriProviderKey(self):
         return 'cesium_ion'
 

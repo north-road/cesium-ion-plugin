@@ -8,4 +8,3 @@ from .data_items import (
 )
 from .select_token_widget import SelectTokenWidget  # NOQA
 from .add_asset_dialog import AddAssetDialog  # NOQA
-

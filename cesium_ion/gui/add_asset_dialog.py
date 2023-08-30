@@ -3,14 +3,12 @@ Add asset dialog
 """
 from typing import Optional
 
-from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QWidget,
     QVBoxLayout,
     QDialogButtonBox
 )
-
 from qgis.gui import (
     QgsGui
 )
@@ -19,8 +17,11 @@ from .select_token_widget import SelectTokenWidget
 
 
 class AddAssetDialog(QDialog):
+    """
+    A custom dialog for adding an asset to a project
+    """
 
-    def __init__(self, parent: Optional[QWidget]=None):
+    def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
         self.setObjectName('AddAssetDialog')
@@ -47,6 +48,9 @@ class AddAssetDialog(QDialog):
         )
 
     def _set_valid(self, is_valid: bool):
+        """
+        Sets whether the dialog state is valid
+        """
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(
             is_valid
         )
