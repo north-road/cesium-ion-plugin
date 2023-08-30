@@ -33,9 +33,9 @@ class SelectTokenWidget(QWidget, WIDGET):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.radio_new.setChecked(True)
-        self.widget_new.setEnabled(True)
-        self.widget_existing.setEnabled(False)
+        self.radio_existing.setChecked(True)
+        self.widget_new.setEnabled(False)
+        self.widget_existing.setEnabled(True)
         self.widget_manual.setEnabled(False)
 
         self.radio_new.toggled.connect(self.widget_new.setEnabled)
@@ -60,6 +60,11 @@ class SelectTokenWidget(QWidget, WIDGET):
         tokens = API_CLIENT.parse_list_tokens_reply(self._list_tokens_reply)
         for token in tokens:
             self.combo_existing.addItem(token.name, token.token)
+
+        if not tokens:
+            self.radio_existing.setEnabled(False)
+            if self.radio_existing.isChecked():
+                self.radio_new.setChecked(True)
 
     def _validate(self):
         """
