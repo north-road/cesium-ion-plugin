@@ -1,6 +1,14 @@
 """
 Cesium ion data browser items
 """
+from functools import partial
+
+from qgis.PyQt.QtCore import (
+    QCoreApplication
+)
+from qgis.PyQt.QtWidgets import (
+    QAction
+)
 
 from qgis.core import (
     Qgis,
@@ -178,7 +186,27 @@ class CesiumIonDataItemGuiProvider(QgsDataItemGuiProvider):
         CesiumIonLayerUtils.add_asset_interactive(item.asset)
         return True
 
+    def tr(self, string, context=''):
+        if context == '':
+            context = self.__class__.__name__
+        return QCoreApplication.translate(context, string)
+
+    def populateContextMenu(self, item, menu, selectedItems, context):
+        if not isinstance(item, IonAssetItem):
+            return
+
+        add_to_project_action = QAction(self.tr('Add Asset to Project'),
+                                        menu)
+        add_to_project_action.triggered.connect(partial(self._add_asset, item.asset))
+        menu.addAction(add_to_project_action)
+
     # pylint: enable=missing-docstring,unused-argument
+
+    def _add_asset(self, asset: Asset):
+        """
+        Adds an asset to the project
+        """
+        CesiumIonLayerUtils.add_asset_interactive(asset)
 
 
 class CesiumIonDropHandler(QgsCustomDropHandler):
