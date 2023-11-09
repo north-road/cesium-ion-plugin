@@ -125,7 +125,8 @@ class CesiumIonPlugin(QObject):
                     'and store this safely!\n\n'
                     '(This password will not be accessible to the Cesium ion '
                     'plugin, and will never be shared with the Cesium ion '
-                    'service.)'),
+                    'service. Don\'t use the same password as you use for '
+                    'ion!)'),
             QMessageBox.Ok
         )
 
