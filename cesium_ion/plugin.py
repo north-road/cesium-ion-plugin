@@ -9,7 +9,10 @@ from qgis.PyQt.QtCore import (
     QObject,
     QCoreApplication
 )
-from qgis.PyQt.QtWidgets import QPushButton
+from qgis.PyQt.QtWidgets import (
+    QPushButton,
+    QMessageBox
+)
 from qgis.core import (
     Qgis,
     QgsApplication,
@@ -17,7 +20,8 @@ from qgis.core import (
 )
 from qgis.gui import (
     QgsGui,
-    QgisInterface
+    QgisInterface,
+    QgsMessageBarItem
 )
 
 from .core import API_CLIENT
@@ -42,10 +46,15 @@ class CesiumIonPlugin(QObject):
             None
         self.drop_handler: Optional[CesiumIonDropHandler] = None
 
+        self._current_message_bar_item: Optional[QgsMessageBarItem] = None
+
     # qgis plugin interface
     # pylint: disable=missing-function-docstring
 
     def initGui(self):
+        if not self._create_oauth_config():
+            return
+
         self.data_item_provider = CesiumIonDataItemProvider()
         QgsApplication.dataItemProviderRegistry().addProvider(
             self.data_item_provider
@@ -58,8 +67,6 @@ class CesiumIonPlugin(QObject):
 
         self.drop_handler = CesiumIonDropHandler()
         self.iface.registerCustomDropHandler(self.drop_handler)
-
-        self._create_oauth_config()
 
     def unload(self):
         if self.data_item_gui_provider and \
@@ -96,28 +103,65 @@ class CesiumIonPlugin(QObject):
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('Cesium ION', message)
 
-    def _create_oauth_config(self):
+    def _configure_auth(self):
         """
-        Creates the Cesium ion oauth config, if it doesn't already exist
+        Walks user through configuring QGIS authentication system
+        """
+        if (self._current_message_bar_item and
+                not sip.isdeleted(self._current_message_bar_item)):
+            self.iface.messageBar().popWidget(self._current_message_bar_item)
+            self._current_message_bar_item = None
+
+        QMessageBox.information(
+            self.iface.mainWindow(),
+            self.tr('Configure QGIS Authentication'),
+            self.tr('In order to securely store access credentials, '
+                    'the Cesium ion plugin requires use of the QGIS '
+                    'Authentication database. This has not been setup for '
+                    'this QGIS user profile.\n\n'
+                    'On the next screen you\'ll be prompted for a master '
+                    'password which will be used to secure the QGIS '
+                    'Authentication system. Please enter a secure password '
+                    'and store this safely!\n\n'
+                    '(This password will not be accessible to the Cesium ion '
+                    'plugin, and will never be shared with the Cesium ion '
+                    'service.)'),
+            QMessageBox.Ok
+        )
+
+        QgsApplication.authManager().setMasterPassword()
+        # remove unwanted message
+        for item in self.iface.messageBar().items():
+            if item.text().startswith('Retrieving password from your '
+                                      'Wallet/KeyRing failed'):
+                self.iface.messageBar().popWidget(item)
+                break
+
+        self.initGui()
+
+    def _create_oauth_config(self) -> bool:
+        """
+        Creates the Cesium ion oauth config, if it doesn't already exist.
+
+        Returns True if the oauth config is ready to use
         """
         if not QgsApplication.authManager().masterPasswordHashInDatabase() or \
                 not QgsApplication.authManager().setMasterPassword(True):
-            def show_options(_):
-                self.iface.showOptionsDialog(
-                    self.iface.mainWindow(), 'mOptionsPageAuth')
 
             message_widget = self.iface.messageBar().createMessage(
                 self.tr('Cesium ion'),
                 self.tr(
                     'QGIS authentication system not available -- '
-                    'please configure and retry')
+                    'please configure')
             )
             details_button = QPushButton(self.tr("Configure"))
-            details_button.clicked.connect(show_options)
+            details_button.clicked.connect(self._configure_auth)
             message_widget.layout().addWidget(details_button)
-            self.iface.messageBar().pushWidget(message_widget,
-                                               Qgis.MessageLevel.Warning, 0)
-            return
+            self._current_message_bar_item = (
+                self.iface.messageBar().pushWidget(message_widget,
+                                                   Qgis.MessageLevel.Warning,
+                                                   0))
+            return False
 
         config = QgsAuthMethodConfig(method='OAuth2')
         config.setName('Cesium ion')
@@ -137,3 +181,5 @@ class CesiumIonPlugin(QObject):
             QgsApplication.authManager().updateAuthenticationConfig(config)
         else:
             QgsApplication.authManager().storeAuthenticationConfig(config)
+
+        return True
