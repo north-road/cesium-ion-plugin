@@ -11,7 +11,7 @@
 name=Cesium ion
 qgisMinimumVersion=3.33
 description=Browse and add datasets from Cesium ion
-version=1.0.0
+version=1.0.1
 author=North Road
 email=info@north-road.com
 
@@ -24,7 +24,7 @@ repository=https://github.com/north-road/cesium-ion-plugin
 # Recommended items:
 
 # Uncomment the following line and add your changelog:
-changelog=changelog
+changelog=1.0.1 Fix authentication handling
 
 # Tags are comma separated with spaces allowed
 tags=tiled,3d,tiles,mesh,cesium,ion,b3dm,gltf,scenes
