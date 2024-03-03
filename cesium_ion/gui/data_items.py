@@ -113,7 +113,7 @@ class CesiumIonDataItemProvider(QgsDataItemProvider):
         return 'cesium_ion'
 
     def capabilities(self):
-        return int(QgsDataProvider.Dir)
+        return QgsDataProvider.Dir
 
     def createDataItem(self, path, parentItem):
         if not path:
