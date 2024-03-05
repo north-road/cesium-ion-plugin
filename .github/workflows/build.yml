@@ -38,7 +38,7 @@ jobs:
       run: |
         qgis-plugin-ci --no-validation package ${{ env.VERSION }}
         mkdir tmp
-        unzip cesium_ion.dev-${{ env.VERSION }}.zip -d tmp
+        unzip cesium_ion.${{ env.VERSION }}.zip -d tmp
 
     - uses: actions/upload-artifact@v2
       with:
