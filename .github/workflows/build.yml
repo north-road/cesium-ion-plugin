@@ -42,5 +42,5 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: cesium_ion_plugin
+        name: cesium_ion_plugin.${{ env.VERSION }}.${GITHUB_SHA}
         path: tmp
