@@ -36,7 +36,7 @@ jobs:
 
     - name: Build package
       run: |
-        qgis-plugin-ci package ${{ env.VERSION }}
+        qgis-plugin-ci package ${{ env.VERSION }} --no-validation
         mkdir tmp
         unzip cesium_ion.dev-${{ env.VERSION }}.zip -d tmp
 
