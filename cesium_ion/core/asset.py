@@ -54,6 +54,21 @@ class Asset:
             exportable=json.get('exportable')
         )
 
+    @staticmethod
+    def from_qgis_drop_uri(name, uri):
+        asset_id, asset_type_str = uri.split("\n")
+        asset_type = AssetType.Tiles3D if asset_type_str == '3DTILES' else 'TERRAIN'
+        return Asset(
+            id=asset_id,
+            name=name,
+            type=asset_type,
+            status=Status.Complete
+        )
+
+    def as_qgis_drop_uri(self) -> str:
+        type_str = '3DTILES' if self.type == AssetType.Tiles3D else 'TERRAIN'
+        return str(self.id) + "\n" + type_str
+
     def as_qgis_data_source(self, access_token: Optional[str] = None) -> str:
         """
         Returns a QGIS data source string representing a connection
