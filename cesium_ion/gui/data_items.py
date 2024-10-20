@@ -63,7 +63,7 @@ class IonAssetItem(QgsDataItem):
         u.layerType = "custom"
         u.providerKey = "cesium_ion"
         u.name = self.asset.name
-        u.uri = str(self.asset.id)
+        u.uri = self.asset.as_qgis_drop_uri()
         return u
 
     def mimeUris(self):  # pylint: disable=missing-docstring
@@ -185,8 +185,9 @@ class CesiumIonLayerUtils:
         Adds an asset with the specified token
         """
         ds = asset.as_qgis_data_source(token)
+        provider = 'cesiumtiles' if asset.type == AssetType.Tiles3D else 'quantizedmesh'
         iface.addTiledSceneLayer(
-            ds, asset.name, 'cesiumtiles'
+            ds, asset.name, provider
         )
 
 
@@ -253,12 +254,7 @@ class CesiumIonDropHandler(QgsCustomDropHandler):
         return 'cesium_ion'
 
     def handleCustomUriDrop(self, uri):
-        asset = Asset(
-            id=uri.uri,
-            name=uri.name,
-            type=AssetType.Tiles3D,
-            status=Status.Complete
-        )
+        asset = Asset.from_qgis_drop_uri(uri.name, uri.uri)
 
         CesiumIonLayerUtils.add_asset_interactive(asset)
 

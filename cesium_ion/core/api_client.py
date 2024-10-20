@@ -106,7 +106,7 @@ class CesiumIonApiClient(QObject):
             params['search'] = filter_string
 
         params['status'] = 'COMPLETE'
-        params['type'] = '3DTILES'
+        params['type'] = ['3DTILES','TERRAIN']
 
         request = self._build_request(
             self.LIST_ASSETS_ENDPOINT,
