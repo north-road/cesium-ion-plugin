@@ -21,7 +21,8 @@ from qgis.PyQt.QtNetwork import (
 )
 from qgis.core import (
     QgsApplication,
-    QgsBlockingNetworkRequest
+    QgsBlockingNetworkRequest,
+    Qgis
 )
 
 from .asset import Asset
@@ -106,7 +107,10 @@ class CesiumIonApiClient(QObject):
             params['search'] = filter_string
 
         params['status'] = 'COMPLETE'
-        params['type'] = ['3DTILES','TERRAIN']
+        params['type'] = ['3DTILES']
+        # quantized mesh support
+        if Qgis.versionInt() >= 34000:
+            params['type'].append('TERRAIN')
 
         request = self._build_request(
             self.LIST_ASSETS_ENDPOINT,
