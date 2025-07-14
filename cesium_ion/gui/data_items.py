@@ -185,7 +185,7 @@ class CesiumIonLayerUtils:
         Adds an asset with the specified token
         """
         ds = asset.as_qgis_data_source(token)
-        provider = 'cesiumtiles' if asset.type == AssetType.Tiles3D else 'quantizedmesh'
+        provider = asset.type.to_qgis_data_provider()
         iface.addTiledSceneLayer(
             ds, asset.name, provider
         )

@@ -1,7 +1,7 @@
 """
 Cesium ion plugin enums
 """
-
+from typing import Optional
 from enum import Enum, auto
 
 
@@ -31,6 +31,29 @@ class AssetType(Enum):
             'CZML': AssetType.CZML,
             'GEOJSON': AssetType.GeoJSON
         }[string.upper()]
+
+    def to_string(self) -> str:
+        """
+        Returns a string value representing the asset type
+        """
+        return {
+            AssetType.Tiles3D: '3DTILES',
+            AssetType.GLTF: 'GLTF',
+            AssetType.Imagery: 'IMAGERY',
+            AssetType.Terrain: 'TERRAIN',
+            AssetType.KML: 'KML',
+            AssetType.CZML: 'CZML',
+            AssetType.GeoJSON: 'GEOJSON'
+        }[self]
+
+    def to_qgis_data_provider(self) -> Optional[str]:
+        """
+        Returns the QGIS data provider associated with the asset type
+        """
+        return {
+            AssetType.Tiles3D: 'cesiumtiles',
+            AssetType.Terrain: 'quantizedmesh',
+        }.get(self)
 
 
 class Status(Enum):

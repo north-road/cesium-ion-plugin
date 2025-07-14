@@ -55,7 +55,10 @@ class Asset:
         )
 
     @staticmethod
-    def from_qgis_drop_uri(name, uri):
+    def from_qgis_drop_uri(name, uri) -> 'Asset':
+        """
+        Decodes an asset from a QGIS uri
+        """
         asset_id, asset_type_str = uri.split("\n")
         asset_type = AssetType.from_string(asset_type_str)
         return Asset(
@@ -66,7 +69,10 @@ class Asset:
         )
 
     def as_qgis_drop_uri(self) -> str:
-        type_str = '3DTILES' if self.type == AssetType.Tiles3D else 'TERRAIN'
+        """
+        Encodes the asset from a QGIS uri
+        """
+        type_str = self.type.to_string()
         return str(self.id) + "\n" + type_str
 
     def as_qgis_data_source(self, access_token: Optional[str] = None) -> str:
