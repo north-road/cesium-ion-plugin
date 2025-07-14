@@ -41,7 +41,7 @@ jobs:
         mkdir tmp
         unzip cesium_ion.${{ env.VERSION }}.zip -d tmp
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: cesium_ion_plugin.${{ env.VERSION }}.${{ env.SHA_SHORT }}
         path: tmp
