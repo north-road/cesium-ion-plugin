@@ -57,7 +57,7 @@ class Asset:
     @staticmethod
     def from_qgis_drop_uri(name, uri):
         asset_id, asset_type_str = uri.split("\n")
-        asset_type = AssetType.Tiles3D if asset_type_str == '3DTILES' else 'TERRAIN'
+        asset_type = AssetType.from_string(asset_type_str)
         return Asset(
             id=asset_id,
             name=name,
